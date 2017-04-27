@@ -9,7 +9,7 @@
                 this.ws = new WebSocket("ws://localhost:3001");
 
                 this.ws.onmessage = (event) =>{
-                    console.log(event)
+                    console.log("this.ws.onmessage blir kjørt")
                     var jsonm = event.data;
                     var bef = $('#messages-ter').html();
                     var beep = "\n<li>\n<p>Res: " + jsonm.name
@@ -44,7 +44,7 @@
             messages = new Messages($('#messages-ter'));
             $('#send').click((event) => {
                 console.log("hei");
-                console.log(event)
+                //console.log(event)
                 messages.on_send(event);
             });
         });

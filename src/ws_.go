@@ -9,9 +9,6 @@ import (
 	"bytes"
 	"encoding/base64"
 	"crypto/sha1"
-	//"net/textproto"
-	//"regexp"
-	//"strings"
 )
 
 func main() {
@@ -29,10 +26,30 @@ const (
 	magic_server_key = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
 )
 type web_sokker struct {
-	//map[]
+	clients [] *client_
+	joins chan net.Conn
+	inc chan string
+	out chan string
 }
 
 var p = fmt.Println
+
+func (ws *web_sokker) Broadcast(d string){
+	for _, c := range ws.clients{
+		c.out <- d
+	}
+}
+//adds a client to connected, and connects incoming ws messages to the client.
+func (ws *web_sokker) Add(c net.Conn){
+	new_client:= new_client_(c)
+	ws.clients = append(ws.clients, new_client) // new client
+	//lambda
+	go func(){
+		for {
+			ws.inc <- <- new_client.inc // add new client incoming to ws inc
+		}
+	}()
+}
 
 func startWss() {
 	p("Listen for incoming connections.")
@@ -117,10 +134,3 @@ func reject(client net.Conn) {
 	//client.Close();
 }
 
-//Funnet på nett
-/*
-Første byte inneholder typ beskrivelse
-Andre byte inneholder lengden på dataen fra(/til) klienten
-either two or eight bytes if the length does not fit in the second byte (the second byte is then a code saying how many bytes are used for the length)
-the actual (raw) data
- */

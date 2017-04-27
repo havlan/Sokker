@@ -12,7 +12,7 @@
                     console.log("this.ws.onmessage blir kjørt")
                     var jsonm = event.data;
                     var bef = $('#messages-ter').html();
-                    var beep = "\n<li>\n<p>Res: " + jsonm.name
+                    var beep = "\n<li>\n<p>Res: " + jsonm
                     $('#messages-ter').html(bef + beep);
                 };
                 this.ws.onerror = (error) =>{

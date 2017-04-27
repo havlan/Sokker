@@ -93,6 +93,7 @@ func recv_data(client net.Conn){
 		p("avbryter klient")
 		client.Close()
 	}else{
+		p("fortsetter klient")
 		decoded := decode(reply)
 		encoded := encode(decoded)
 		client.Write(encoded)
@@ -114,7 +115,6 @@ func handshake(client net.Conn) {
 		buff.WriteString("Sec-WebSocket-Accept:")
 		buff.WriteString(t + "\r\n\r\n")
 		client.Write(buff.Bytes())
-		p(key)
 		recv_data(client)
 	}
 }
@@ -136,6 +136,6 @@ func parseKey(client net.Conn) (code int, k string) {
 func reject(client net.Conn) {
 	reject := "HTTP/1.1 400 Bad Request\r\nContent-Type: text/plain\r\nConnection: close\r\n\r\nIncorrect request"
 	client.Write([]byte(reject))
-	client.Close();
+	//client.Close();
 }
 

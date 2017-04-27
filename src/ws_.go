@@ -88,12 +88,15 @@ func recv_data(client net.Conn){
 	p("LISTEN TO recv_data")
 	reply := make([]byte, 64)
 	client.Read(reply)
-	decoded := decode(reply)
-	encoded := encode(decoded)
-	client.Write(encoded)
 	upcodeInt := opcode(reply)
-	p(upcodeInt)
-	client.Close()
+	if upcodeInt == 1{
+		p("avbryter klient")
+		client.Close()
+	}else{
+		decoded := decode(reply)
+		encoded := encode(decoded)
+		client.Write(encoded)
+	}
 }
 
 func handshake(client net.Conn) {

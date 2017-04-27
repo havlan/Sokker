@@ -70,7 +70,7 @@ func decode(rawBytes []byte) string {
 }
 
 
-//kan utvides til å inneholde de forkjellige opcodeer - bare close til nå
+//kan utvides til å inneholde de forkjellige opcoder - bare close til nå
 func opcode(rawBytes []byte) int{
 	opcodeInt := 0;
 	opcodeS := fmt.Sprintf("%08b", rawBytes[0])

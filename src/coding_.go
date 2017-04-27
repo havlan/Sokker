@@ -1,5 +1,6 @@
 package main
 
+
 func encode(message string) (result []byte) {
 	rawBytes := []byte(message)
 	var idxData int
@@ -48,8 +49,17 @@ func decode(rawBytes []byte) string {
 		idxMask = 2
 	}
 
+	length := 6;
+	for i := range rawBytes {
+		if rawBytes[i]==0 {
+			length = i
+			break
+		}
+	}
+
+
 	masks := rawBytes[idxMask : idxMask+4]
-	data := rawBytes[idxMask+4 : len(rawBytes)]
+	data := rawBytes[idxMask+4 : length]
 	decoded := make([]byte, len(rawBytes)-idxMask+4)
 
 	for i, b := range data {

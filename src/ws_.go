@@ -86,12 +86,15 @@ func hand(str string)(keyz string){
 
 func recv_data(client net.Conn){
 	p("LISTEN TO recv_data")
-	reply := make([]byte, 32)
+	reply := make([]byte, 64)
 	client.Read(reply)
+	fmt.Println("Message bit Received:", reply)
 	decoded := decode(reply)
 	fmt.Println("Message Received:", decoded)
-	client.Write(reply)
-	//client.Close()
+	encoded := encode(decoded)
+	fmt.Println("Message  to be sendt:", encoded)
+	client.Write(encoded)
+	client.Close()
 }
 
 func handshake(client net.Conn) {

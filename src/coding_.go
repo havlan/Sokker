@@ -1,9 +1,6 @@
 package main
 
-
-
-
-func encode (message string) (result []byte) {
+func encode(message string) (result []byte) {
 	rawBytes := []byte(message)
 	var idxData int
 
@@ -15,20 +12,20 @@ func encode (message string) (result []byte) {
 	} else if len(rawBytes) >= 126 && len(rawBytes) <= 65535 { //two bytes to store data length
 		result = make([]byte, len(rawBytes)+4)
 		result[1] = 126 //extra storage needed
-		result[2] = ( length >> 8 ) & 255
-		result[3] = ( length      ) & 255
+		result[2] = (length >> 8) & 255
+		result[3] = (length) & 255
 		idxData = 4
 	} else {
 		result = make([]byte, len(rawBytes)+10)
 		result[1] = 127
-		result[2] = ( length >> 56 ) & 255
-		result[3] = ( length >> 48 ) & 255
-		result[4] = ( length >> 40 ) & 255
-		result[5] = ( length >> 32 ) & 255
-		result[6] = ( length >> 24 ) & 255
-		result[7] = ( length >> 16 ) & 255
-		result[8] = ( length >> 8 ) & 255
-		result[9] = ( length       ) & 255
+		result[2] = (length >> 56) & 255
+		result[3] = (length >> 48) & 255
+		result[4] = (length >> 40) & 255
+		result[5] = (length >> 32) & 255
+		result[6] = (length >> 24) & 255
+		result[7] = (length >> 16) & 255
+		result[8] = (length >> 8) & 255
+		result[9] = (length) & 255
 		idxData = 10
 	}
 
@@ -41,7 +38,7 @@ func encode (message string) (result []byte) {
 	return
 }
 
-func decode (rawBytes []byte) string {
+func decode(rawBytes []byte) string {
 	var idxMask int
 	if rawBytes[1] == 126 {
 		idxMask = 4
@@ -51,12 +48,12 @@ func decode (rawBytes []byte) string {
 		idxMask = 2
 	}
 
-	masks := rawBytes[idxMask:idxMask + 4]
-	data := rawBytes[idxMask + 4:len(rawBytes)]
-	decoded := make([]byte, len(rawBytes) - idxMask + 4)
+	masks := rawBytes[idxMask : idxMask+4]
+	data := rawBytes[idxMask+4 : len(rawBytes)]
+	decoded := make([]byte, len(rawBytes)-idxMask+4)
 
 	for i, b := range data {
-		decoded[i] = b ^ masks[i % 4]
+		decoded[i] = b ^ masks[i%4]
 	}
 	return string(decoded)
 }

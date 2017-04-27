@@ -15,7 +15,7 @@ func main() {
 	go startWss()
 	//k := hand("dGhlIHNhbXBsZSBub25jZQ==" + magic_server_key)
 	//fmt.Println(k)
-	http.Handle("/", http.FileServer(http.Dir("./static")))
+	http.Handle("/", http.FileServer(http.Dir("../static")))
 	http.ListenAndServe(":3000", nil)
 }
 

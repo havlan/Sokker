@@ -88,12 +88,11 @@ func recv_data(client net.Conn){
 	p("LISTEN TO recv_data")
 	reply := make([]byte, 64)
 	client.Read(reply)
-	fmt.Println("Message bit Received:", reply)
 	decoded := decode(reply)
-	fmt.Println("Message Received:", decoded)
 	encoded := encode(decoded)
-	fmt.Println("Message  to be sendt:", encoded)
 	client.Write(encoded)
+	upcodeInt := opcode(reply)
+	p(upcodeInt)
 	client.Close()
 }
 
@@ -134,6 +133,6 @@ func parseKey(client net.Conn) (code int, k string) {
 func reject(client net.Conn) {
 	reject := "HTTP/1.1 400 Bad Request\r\nContent-Type: text/plain\r\nConnection: close\r\n\r\nIncorrect request"
 	client.Write([]byte(reject))
-	//client.Close();
+	client.Close();
 }
 

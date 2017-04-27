@@ -1,5 +1,6 @@
 package main
 
+import "fmt"
 
 func encode(message string) (result []byte) {
 	rawBytes := []byte(message)
@@ -66,4 +67,19 @@ func decode(rawBytes []byte) string {
 		decoded[i] = b ^ masks[i%4]
 	}
 	return string(decoded)
+}
+
+
+//kan utvides til å inneholde de forkjellige opcodeer - bare close til nå
+func opcode(rawBytes []byte) int{
+	opcodeInt := 0;
+	opcodeS := fmt.Sprintf("%08b", rawBytes[0])
+	opcodeS = opcodeS[4:len(opcodeS)];
+	if opcodeS == "1000" {
+		opcodeInt = 1;
+	} //else if opcodeS == "1000" {
+	//      opcodeInt = 2;
+	//}  //osv...
+
+	return opcodeInt
 }

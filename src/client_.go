@@ -50,7 +50,7 @@ func (c *client_) write (){
 	}
 }
 
-//2 goroutines to which listens to users
+//2 goroutines which listens to users
 func (c *client_) listen(){
 	log.Println("Listen: ",c.conn)
 	go c.read()

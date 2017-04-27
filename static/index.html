@@ -9,7 +9,7 @@
                 this.ws = new WebSocket("ws://localhost:3001");
 
                 this.ws.onmessage = (event) =>{
-                    //console.log(event)
+                    console.log(event)
                     var jsonm = event.data;
                     var bef = $('#messages-ter').html();
                     var beep = "\n<li>\n<p>Res: " + jsonm.name
@@ -42,10 +42,10 @@
         //When this file is fully loaded, initialize board with context
         $(document).ready(function () {
             messages = new Messages($('#messages-ter'));
-            console.log(event)
             $('#send').click((event) => {
                 console.log("hei");
-            messages.on_send(event);
+                console.log(event)
+                messages.on_send(event);
             });
         });
 

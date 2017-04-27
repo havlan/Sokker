@@ -32,7 +32,6 @@ type web_sokker struct {
 	out chan string
 }
 
-
 var p = fmt.Println
 
 func (ws *web_sokker) Broadcast(d string){

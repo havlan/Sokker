@@ -97,6 +97,7 @@ func recv_data(client net.Conn){
 		decoded := decode(reply)
 		encoded := encode(decoded)
 		client.Write(encoded)
+		recv_data(client)
 	}
 }
 

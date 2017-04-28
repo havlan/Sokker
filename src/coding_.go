@@ -70,16 +70,18 @@ func decode(rawBytes []byte) string {
 }
 
 
-//kan utvides til å inneholde de forkjellige opcoder - bare close til nå
+//checks a upcode for
 func opcode(rawBytes []byte) int{
 	opcodeInt := 0;
 	opcodeS := fmt.Sprintf("%08b", rawBytes[0])
 	opcodeS = opcodeS[4:len(opcodeS)];
-	if opcodeS == "1000" {
+	if opcodeS == "1000" {		// Close 0x8
 		opcodeInt = 1;
-	} //else if opcodeS == "1000" {
-	//      opcodeInt = 2;
-	//}  //osv...
+	} else if opcodeS == "1001" {  	// Ping 0x9
+		opcodeInt = 2;
+	}else if opcodeS  == "1010" {  	// Pong 0xA
+		opcodeInt = 2;
+	} //osv...
 
 	return opcodeInt
 }

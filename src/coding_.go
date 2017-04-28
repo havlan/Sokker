@@ -69,6 +69,12 @@ func decode(rawBytes []byte) string {
 	return string(decoded)
 }
 
+/*
+Currently defined opcodes for control frames
+include 0x8 (Close), 0x9 (Ping), and 0xA (Pong).
+Opcodes 0xB-0xF are reserved for further control frames yet to be defined.
+ */
+
 
 //checks a upcode for
 func opcode(rawBytes []byte) int{

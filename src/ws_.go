@@ -31,7 +31,9 @@ import (
 )
 
 func main() {
-	go startWss()
+	sokk := new_web_sokker()
+
+	go sokk.Init()
 	//k := hand("dGhlIHNhbXBsZSBub25jZQ==" + magic_server_key)
 	//fmt.Println(k)
 	http.Handle("/", http.FileServer(http.Dir("../static")))
@@ -68,7 +70,33 @@ func new_web_sokker() *web_sokker{
 	return ws
 }
 
+
+func (ws *web_sokker) Init(){
+	listener, err := net.Listen("tcp","localhost:3001")
+	if err != nil {
+		log.Println("Error listening:", err.Error())
+		os.Exit(1)
+	}
+	//Executed when the application closes.
+	defer listener.Close()
+	for {
+		// Listen for an incoming connection.
+		conn, err := listener.Accept()
+		if err != nil {
+			log.Println("Error accepting: ", err.Error())
+			os.Exit(1)
+		}
+		// Handle connections in a new go
+		go ws.handler(conn)
+	}
+
+}
+
 func (ws *web_sokker) Broadcast(d string){
+
+	//TODO IMPLEMENT WEBSOCKET FRAME HERE
+
+
 	for _, c := range ws.clients{
 		c.out <- d
 	}
@@ -100,7 +128,7 @@ func (ws *web_sokker) Listen(){
 
 			case data := <-ws.inc: // disse lytter til data
 				log.Println(data)
-				ws.Broadcast(data)
+				//ws.Broadcast(data)
 
 				//case conn := <- ws.joins:
 				//ws.Add(conn)
@@ -109,7 +137,7 @@ func (ws *web_sokker) Listen(){
 	}()
 }
 
-func startWss() {
+func(ws *web_sokker) startWss() {
 	log.Println("Listen for incoming connections.")
 	listener, err := net.Listen(CONN_TYPE, CONN_HOST+":"+CONN_PORT)
 	if err != nil {
@@ -127,7 +155,7 @@ func startWss() {
 			os.Exit(1)
 		}
 		// Handle connections in a new thread (goroutine)
-		go handler(conn)
+		go ws.handler(conn)
 	}
 }
 
@@ -136,8 +164,8 @@ func handler(net.Conn)
 initiates the handshake process which is required
 handler does handshake
  */
-func handler(client net.Conn) {
-	handshake(client)
+func(ws *web_sokker) handler(client net.Conn) {
+	ws.handshake(client)
 }
 
 /*
@@ -155,7 +183,6 @@ func magic_str(str string)(keyz string){
 
 //unused?
 func recv_data(client net.Conn){
-	log.Println("LISTEN TO recv_data")
 	reply := make([]byte, 64)
 	client.Read(reply)
 	upcodeInt := opcode(reply)
@@ -177,7 +204,7 @@ Sends a client to parse the key, it either gets rejected(bad request) or accepte
 101 statuscode is switching protocols, because we are going over to websockets
  */
 
-func handshake(client net.Conn) {
+func(ws *web_sokker) handshake(client net.Conn) {
 	status, key := parseKey(client)
 	if status != 101 {
 		//reject
@@ -193,7 +220,9 @@ func handshake(client net.Conn) {
 		buff.WriteString(t + "\r\n\r\n")
 		client.Write(buff.Bytes())
 		log.Println(key)
-		recv_data(client)
+		//recv_data(client)
+		ws.Add(client)
+
 	}
 }
 

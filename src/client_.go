@@ -28,6 +28,7 @@ func new_client_ (c net.Conn)*client_{
 	n_cli:= &client_{
 		inc: make(chan string),
 		out: make(chan string),
+		conn: c,
 		reader: r,
 		writer:w,
 	}
@@ -37,6 +38,7 @@ func new_client_ (c net.Conn)*client_{
 }
 
 func (c *client_) read (){ // \r\n\r\n
+	buff := make([]byte,256)
 	for{
 		bt, _ := c.reader.ReadString('\n')
 		c.inc <- bt //channel that sends to
@@ -52,7 +54,7 @@ func (c *client_) write (){
 
 //2 goroutines which listens to users
 func (c *client_) listen(){
-	log.Println("Listen: ",c.conn)
+	log.Println("Listen: ",c.conn.RemoteAddr())
 	go c.read()
 	go c.write()
 }

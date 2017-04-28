@@ -18,7 +18,7 @@ THE GOAL IS TO PARSE THIS
 +---------------------------------------------------------------+
 */
 
-package main
+package horse
 
 import (
 	"net"

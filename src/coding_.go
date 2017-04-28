@@ -77,10 +77,20 @@ func opcode(rawBytes []byte) int{
 	opcodeS = opcodeS[4:len(opcodeS)];
 	if opcodeS == "1000" {		// Close 0x8
 		opcodeInt = 1;
-	} else if opcodeS == "1001" {  	// Ping 0x9
+	}else if opcodeS == "1001" {  	// Ping 0x9
 		opcodeInt = 2;
 	}else if opcodeS  == "1010" {  	// Pong 0xA
-		opcodeInt = 2;
+		opcodeInt = 3;
+	}else if opcodeS  == "1011" {  	// Pong 0xB
+		opcodeInt = 4;
+	}else if opcodeS  == "1100" {  	// Pong 0xC
+		opcodeInt = 5;
+	}else if opcodeS  == "1101" {  	// Pong 0xD
+		opcodeInt = 6;
+	}else if opcodeS  == "1110" {  	// Pong 0xE
+		opcodeInt = 7;
+	}else if opcodeS  == "1111" {  	// Pong 0xF
+		opcodeInt = 8;
 	} //osv...
 
 	return opcodeInt

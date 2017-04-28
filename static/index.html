@@ -9,7 +9,6 @@
                 this.ws = new WebSocket("ws://localhost:3001");
 
                 this.ws.onmessage = (event) =>{
-                    console.log("this.ws.onmessage blir kjørt")
                     var jsonm = event.data;
                     var bef = $('#messages-ter').html();
                     var beep = "\n<li>\n<p>Res: " + jsonm

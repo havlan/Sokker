@@ -17,6 +17,7 @@ THE GOAL IS TO PARSE THIS
 |                     Payload Data continued ...                |
 +---------------------------------------------------------------+
 */
+
 package main
 
 import (

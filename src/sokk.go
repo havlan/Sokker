@@ -29,6 +29,8 @@ import (
 	"encoding/base64"
 	"crypto/sha1"
 	"log"
+	"fmt"
+	"pkg_t"
 )
 
 
@@ -47,6 +49,11 @@ const (
 
 func main (){
 	sokk := newSokk()
+
+	xs := [] float64{1,2,3,4}// KUN
+	avg := pkg_t.Average(xs) // FOR
+	fmt.Println(avg)         // Å TESTE PACKAGE!
+
 
 	go sokk.startWss()
 	http.Handle("/", http.FileServer(http.Dir("../static")))

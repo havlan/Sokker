@@ -118,24 +118,22 @@ func(ws *sokk) handler(c net.Conn) {
 				data := decode(buff)
 				go ws.sendData(encode(data))
 
-			/*case OP_Text: // 1
+			case OP_Text: // 1
 				log.Println("OP Code Text")
 
 			case OP_Binary: // 2
 				log.Println("OP Code Binary")
 
-			*/
+
 			case OP_Close: // 8
 				log.Println("OP Code Close")
 				c.Close()
 				break
-			/*
-
 			case OP_Ping:  // 9
 				log.Println("Op Code Ping")
 
 			case OP_Pong: // 10
-				log.Println("OP Code Pong")*/
+				log.Println("OP Code Pong")
 			default:
 				log.Println("No familiar op code from client:",opcode)
 				data := decode(buff)

@@ -3,7 +3,7 @@ package main
 import "fmt"
 
 func encode(message string) (result []byte) {
-	rawBytes := []byte(message)
+	rawBytes := []byte(message) // convert to byte array
 	var idxData int
 
 	length := byte(len(rawBytes))
@@ -14,20 +14,20 @@ func encode(message string) (result []byte) {
 	} else if len(rawBytes) >= 126 && len(rawBytes) <= 65535 { //two bytes to store data length
 		result = make([]byte, len(rawBytes)+4)
 		result[1] = 126 //extra storage needed
-		result[2] = (length >> 8) & 255
-		result[3] = (length) & 255
+		result[2] = byte(len(rawBytes) >> 8) //& 255
+		result[3] = (length) //& 255
 		idxData = 4
 	} else {
 		result = make([]byte, len(rawBytes)+10)
 		result[1] = 127
-		result[2] = (length >> 56) & 255
-		result[3] = (length >> 48) & 255
-		result[4] = (length >> 40) & 255
-		result[5] = (length >> 32) & 255
-		result[6] = (length >> 24) & 255
-		result[7] = (length >> 16) & 255
-		result[8] = (length >> 8) & 255
-		result[9] = (length) & 255
+		result[2] = byte(len(rawBytes) >> 56) //& 255
+		result[3] = byte(len(rawBytes) >> 48) //& 255
+		result[4] = byte(len(rawBytes) >> 40) //& 255
+		result[5] = byte(len(rawBytes) >> 32) //& 255
+		result[6] = byte(len(rawBytes) >> 24) //& 255
+		result[7] = byte(len(rawBytes) >> 16) //& 255
+		result[8] = byte(len(rawBytes) >>  8) //& 255
+		result[9] = byte(len(rawBytes)) & 255
 		idxData = 10
 	}
 

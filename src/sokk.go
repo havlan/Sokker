@@ -35,8 +35,6 @@ import (
 
 
 const (
-	CONN_HOST = "localhost"
-	CONN_PORT = "3001"
 	CONN_TYPE = "tcp"
 	magic_server_key = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
 	OP_Continue = 0
@@ -49,13 +47,13 @@ const (
 
 func main (){
 	sokk := newSokk()
-
+	
 	xs := [] float64{1,2,3,4}// KUN
 	avg := pkg_t.Average(xs) // FOR
 	fmt.Println(avg)         // Å TESTE PACKAGE!
-
-
-	go sokk.startWss()
+	
+	
+	go sokk.Start("127.0.0.1","3001") // localhost:3000
 	http.Handle("/", http.FileServer(http.Dir("../static")))
 	http.ListenAndServe(":3000", nil)
 }
@@ -63,7 +61,7 @@ func main (){
 
 type sokk struct {
 	clients []net.Conn
-
+	
 }
 
 func newSokk() *sokk{
@@ -73,24 +71,23 @@ func newSokk() *sokk{
 	return sokk
 }
 /*
-func (*web_sokker) Add(net.Conn)
-takes a net connection and adds to the client list
+	func (*web_sokker) Add(net.Conn)
+	takes a net connection and adds to the client list
  */
 func (ws *sokk) Add(c net.Conn){
-	//new_client:= new_client_(c)
 	ws.clients = append(ws.clients, c) // new client
 	log.Println(c.RemoteAddr()," connected, ",len(ws.clients)," client[s] connected now.")
 }
 
-func(ws *sokk) startWss() {
-	listener, err := net.Listen(CONN_TYPE, CONN_HOST+":"+CONN_PORT)
+func(ws *sokk) Start(ad string, port string) {
+	listener, err := net.Listen(CONN_TYPE, ad + ":" +port)
 	if err != nil {
 		log.Println("Error listening:", err.Error())
 		os.Exit(1)
 	}
 	//Executed when the application closes.
 	defer listener.Close()
-	log.Println("WE LIVE " + CONN_HOST + ":" + CONN_PORT)
+	log.Println("WE LIVE " + ad + ":" + string(port))
 	for {
 		// Listen for an incoming connection.
 		conn, err := listener.Accept()
@@ -103,13 +100,18 @@ func(ws *sokk) startWss() {
 	}
 }
 
+func (ws *sokk) Close(){
+	for i := range ws.clients{
+		ws.clients[i].Close()
+	}
+}
 
 
 /*
-func handler(net.Conn)
-initiates the handshake process which is required
-handler does handshake
-starts the read loop from the user
+	func handler(net.Conn)
+	initiates the handshake process which is required
+	handler does handshake
+	starts the read loop from the user
  */
 func(ws *sokk) handler(c net.Conn) {
 	ok := ws.handshake(c)
@@ -117,45 +119,44 @@ func(ws *sokk) handler(c net.Conn) {
 		for{
 			buff := make([]byte,512)
 			c.Read(buff)
-			log.Println(string(buff[:]))
 			opcode := opcode(buff)
 			switch opcode {
-			case OP_Continue: // 0
-				log.Println("OP Code Continue")
-				data := decode(buff)
-				go ws.sendData(encode(data))
-
+			case OP_Continue: //
+				//log.Println("OP Code Continue")
+				break
+				//data := decode(buff)
+				//go ws.sendData(encode(data))
 			case OP_Text: // 1
 				log.Println("OP Code Text")
-
+				data := decode(buff)
+				go ws.sendData(encode(data))
 			case OP_Binary: // 2
 				log.Println("OP Code Binary")
-
-
 			case OP_Close: // 8
 				log.Println("OP Code Close")
-				c.Close()
+				ws.close_r(c)
 				break
 			case OP_Ping:  // 9
 				log.Println("Op Code Ping")
-
+			
 			case OP_Pong: // 10
 				log.Println("OP Code Pong")
 			default:
 				log.Println("No familiar op code from client:",opcode)
 				data := decode(buff)
-
 				go ws.sendData(encode(data))
-
+				//reset op code?
+				opcode = -1
 			}
-
+			opcode = -1
+			
 		}
 	}
 }
 
 /*
-func sendData(bytes[])
-sends a websocket frame to all the clients
+	func sendData(bytes[])
+	sends a websocket frame to all the clients
  */
 
 func(ws *sokk) sendData(buff []byte){
@@ -165,9 +166,9 @@ func(ws *sokk) sendData(buff []byte){
 }
 
 /*
-func handshake(net.Conn)
-Sends a client to parse the key, it either gets rejected(bad request) or accepted => 101 status code
-101 statuscode is switching protocols, because we are going over to websockets
+	func handshake(net.Conn)
+	Sends a client to parse the key, it either gets rejected(bad request) or accepted => 101 status code
+	101 statuscode is switching protocols, because we are going over to websockets
  */
 
 func(ws *sokk) handshake(client net.Conn) bool{
@@ -187,16 +188,14 @@ func(ws *sokk) handshake(client net.Conn) bool{
 		buff.WriteString(t + "\r\n\r\n")
 		client.Write(buff.Bytes())
 		log.Println(key)
-		//recv_data(client)
 		ws.Add(client)
 		return true
-
 	}
 }
 /*
-func parseKey(net.Conn) (httpStatus int, errcode string)
-Parses the header first sent by client
-Returns http statuscodes and a string/errstring
+	func parseKey(net.Conn) (httpStatus int, errcode string)
+	Parses the header first sent by client
+	Returns http statuscodes and a string/errstring
  */
 
 func parseKey(client net.Conn) (code int, k string) {
@@ -213,8 +212,8 @@ func parseKey(client net.Conn) (code int, k string) {
 	}
 }
 /*
-Client did not pass upgrade handshake, so the client gets rejected
-Returns a standard request, with bad request as status
+	Client did not pass upgrade handshake, so the client gets rejected
+	Returns a standard request, with bad request as status
  */
 func reject(client net.Conn) {
 	var buff bytes.Buffer
@@ -225,13 +224,25 @@ func reject(client net.Conn) {
 	client.Close()
 }
 /*
-func magic_str(in string) (key string)
-takes the key from the clients request, and appends the wskey
-sha1 that sum and returns that string
+	func magic_str(in string) (key string)
+	takes the key from the clients request, and appends the wskey
+	sha1 that sum and returns that string
  */
 func magic_str(str string)(keyz string){
 	h:=sha1.New()
 	h.Write([]byte(str))
 	keyz = base64.StdEncoding.EncodeToString(h.Sum(nil))
 	return
+}
+/*
+	func close_r(net.Conn)
+	removes the connection from the list. If the user count is low,
+ */
+func (ws *sokk) close_r(c net.Conn){
+	for i := range ws.clients{
+		if ws.clients[i] == c {
+			c.Close()
+			ws.clients = append(ws.clients[:i], ws.clients[i+1:]...) // delete from slice
+		}
+	}
 }

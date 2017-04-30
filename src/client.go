@@ -5,6 +5,8 @@ import (
 	"net"
 )
 
+
+//currently unused
 type client struct {
 	writer *bufio.Writer
 	reader *bufio.Reader

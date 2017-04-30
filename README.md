@@ -8,6 +8,7 @@
 - [ ] GIF to show example
 - [X] ExampleCode1
 - [ ] ExampleCode2
+- [ ] Continuation Frame (no pri)
 - [ ] Ping
 - [ ] Pong
 - [X] OP-Codes

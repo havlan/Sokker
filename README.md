@@ -3,10 +3,10 @@
 
 
 - [X] Client-Server communication
-- [ ] Client1-Server-Client2 communicaiton
+- [X] Client1-Server-Client2 communicaiton
 - [ ] Sequence Diagram
 - [ ] GIF to show example
-- [ ] ExampleCode1
+- [X] ExampleCode1
 - [ ] ExampleCode2
 - [ ] Ping
 - [ ] Pong

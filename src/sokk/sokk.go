@@ -18,7 +18,7 @@ THE GOAL IS TO PARSE THIS
 +---------------------------------------------------------------+
 */
 
-package main
+package sokk
 
 import (
     "bufio"
@@ -43,19 +43,25 @@ const (
 )
 
 func main() {
-    sokk := newSokk()
-
+    sokk := NewSokk()
     go sokk.Start("127.0.0.1", "3001") // localhost:3000
     http.Handle("/", http.FileServer(http.Dir("../static")))
     http.ListenAndServe("localhost:3000", nil)
 }
 
-type sokk struct {
+type Sokk struct {
     clients []net.Conn
 }
+type SokkHandler interface {
+    OnMessage() []byte
+    OnClose()
+    OnConnection()
+}
 
-func newSokk() *sokk {
-    sokk := &sokk{
+
+
+func NewSokk() *Sokk {
+    sokk := &Sokk{
 	clients: make([]net.Conn, 0),
     }
     return sokk
@@ -65,12 +71,12 @@ func newSokk() *sokk {
 	func (*web_sokker) Add(net.Conn)
 	takes a net connection and adds to the client list
 */
-func (ws *sokk) Add(c net.Conn) {
+func (ws *Sokk) Add(c net.Conn) {
     ws.clients = append(ws.clients, c) // new client
-    log.Println(c.RemoteAddr(), " connected, ", len(ws.clients), " client[s] connected now.")
+
 }
 
-func (ws *sokk) Start(ad string, port string) {
+func (ws *Sokk) Start(ad string, port string) {
     listener, err := net.Listen(CONN_TYPE, ad+":"+port)
     if err != nil {
 	log.Println("Error listening:", err.Error())
@@ -87,11 +93,11 @@ func (ws *sokk) Start(ad string, port string) {
 	    os.Exit(1)
 	}
 	// Handle connections in a new thread (goroutine)
-	go ws.handler(conn)
+	go ws.handler(&conn)
     }
 }
 
-func (ws *sokk) Close() {
+func (ws *Sokk) Close() {
     for i := range ws.clients {
 	ws.clients[i].Close()
     }
@@ -103,19 +109,20 @@ func (ws *sokk) Close() {
 	handler does handshake
 	starts the read loop from the user
 */
-func (ws *sokk) handler(c net.Conn) {
+func (ws *Sokk)handler(c *net.Conn) {
     ok := ws.handshake(c)
     if ok {
 	for {
 	    buff := make([]byte, 512)
-	    c.Read(buff)
+	    (*c).Read(buff)
 	    var opC = int(0x7F & buff[1])
 	    if opC == 8 {
 		ws.close_r(c)
 	    }else if opC == 9 {
-		//pingpongdingdong
-
-	    }else{
+		response := make([]byte,2)
+		response[0] = byte(138)
+		(*c).Write(response)
+	    }else{ // create wsframe
 		go ws.prep_msg(buff)
 	    }
 
@@ -123,7 +130,7 @@ func (ws *sokk) handler(c net.Conn) {
     }
 }
 
-func (ws *sokk) prep_msg(buff []byte){
+func (ws *Sokk) prep_msg(buff []byte){
     var frame = decode(buff)
     var buffTosend = encode(frame)
     ws.sendData(buffTosend)
@@ -134,7 +141,7 @@ func (ws *sokk) prep_msg(buff []byte){
 	sends a websocket frame to all the clients
 */
 
-func (ws *sokk) sendData(buff []byte) {
+func (ws *Sokk) sendData(buff []byte) {
     for i := range ws.clients {
 	ws.clients[i].Write(buff)
     }
@@ -146,7 +153,7 @@ func (ws *sokk) sendData(buff []byte) {
 	101 statuscode is switching protocols, because we are going over to websockets
 */
 
-func (ws *sokk) handshake(client net.Conn) bool {
+func (ws *Sokk) handshake(client net.Conn) bool {
     status, key := parseKey(client)
     if status != 101 {
 	//reject
@@ -162,7 +169,6 @@ func (ws *sokk) handshake(client net.Conn) bool {
 	buff.WriteString("Sec-WebSocket-Accept:")
 	buff.WriteString(t + "\r\n\r\n")
 	client.Write(buff.Bytes())
-	log.Println(key)
 	ws.Add(client)
 	return true
     }
@@ -217,7 +223,7 @@ func magic_str(str string) (keyz string) {
 	func close_r(net.Conn)
 	removes the connection from the list. If the user count is low,
 */
-func (ws *sokk) close_r(c net.Conn) {
+func (ws *Sokk) close_r(c net.Conn) {
     for i := range ws.clients {
 	if ws.clients[i] == c {
 	    c.Close()

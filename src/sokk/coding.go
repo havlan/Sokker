@@ -1,18 +1,17 @@
-package main
+package sokk
 
 import (
     "encoding/binary"
 )
 
-type sokkMsg struct {
+type SokkMsg struct {
     fin     bool
     opCode  int
     plLen   uint64
     payload []byte
 }
 
-// TODO MAKE ENCODE CREATE A sokkMSG STRUCT!
-func encode(message *sokkMsg) (result []byte) {
+func encode(message *SokkMsg) (result []byte) {
     var idxData int
     length := byte(len(message.payload))
     if len(message.payload) <= 125 { //one byte to store data length
@@ -53,9 +52,9 @@ func encode(message *sokkMsg) (result []byte) {
  if val >= 127 read next 8 bytes (64 bits) as uint (MSB must be 0)
 */
 
-func decode(rawBytes []byte) (result *sokkMsg) {
+func decode(rawBytes []byte) (result *SokkMsg) {
     var idxMask int
-    result = &sokkMsg{
+    result = &SokkMsg{
 	fin:false,
 	opCode:int(0x7F & rawBytes[1]),
 

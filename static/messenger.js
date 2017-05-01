@@ -30,7 +30,7 @@ class Messages {
         var date = new Date();
         var obj = {'name': name, 'msg': msg, 'date': date, 'color': color};
         console.log(color);
-        this.ws.send(obj.name);
+        this.ws.send(name);
     }
 }
 
@@ -38,8 +38,5 @@ var messages;
 //When this file is fully loaded, initialize board with context
 $(document).ready(function () {
     messages = new Messages($('#messages-ter'));
-    $('#send').click((event) => {
-        console.log("hei");
-    messages.on_send(event);
-    });
+    $('#send').click((event) => {messages.on_send(event);});
 });

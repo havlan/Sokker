@@ -1,59 +1,49 @@
 package main
 
-import "fmt"
+import (
+    "encoding/binary"
+)
 
 type sokkMsg struct {
-	fin     bool
-	opCode  int
-	plLen   int
-	payload []byte
+    fin     bool
+    opCode  int
+    plLen   uint64
+    payload []byte
 }
 
 // TODO MAKE ENCODE CREATE A sokkMSG STRUCT!
-func encode(message string) (result []byte) {
-	rawBytes := []byte(message) // convert to byte array
-	var idxData int
-	length := byte(len(rawBytes))
-	if len(rawBytes) <= 125 { //one byte to store data length
-		result = make([]byte, len(rawBytes)+2)
-		result[1] = length
-		idxData = 2
-	} else if len(rawBytes) >= 126 && len(rawBytes) <= 65535 { //two bytes to store data length
-		result = make([]byte, len(rawBytes)+4)
-		result[1] = 126                      //extra storage needed
-		result[2] = byte(len(rawBytes) >> 8) //& 255
-		result[3] = (length)                 //& 255
-		idxData = 4
-	} else {
-		result = make([]byte, len(rawBytes)+10)
-		result[1] = 127
-		result[2] = byte(len(rawBytes) >> 56) //& 255
-		result[3] = byte(len(rawBytes) >> 48) //& 255
-		result[4] = byte(len(rawBytes) >> 40) //& 255
-		result[5] = byte(len(rawBytes) >> 32) //& 255
-		result[6] = byte(len(rawBytes) >> 24) //& 255
-		result[7] = byte(len(rawBytes) >> 16) //& 255
-		result[8] = byte(len(rawBytes) >> 8)  //& 255
-		result[9] = byte(len(rawBytes)) & 255
-		idxData = 10
-	}
-	result[0] = 129              //only text is supported
-	for i, b := range rawBytes { // put raw data at the correct index
-		result[idxData+i] = b
-	}
+func encode(message *sokkMsg) (result []byte) {
+    var idxData int
+    length := byte(len(message.payload))
+    if len(message.payload) <= 125 { //one byte to store data length
+	result = make([]byte, len(message.payload)+2)
+	result[1] = length
+	idxData = 2
+    } else if len(message.payload) >= 126 && len(message.payload) <= 65535 { //two bytes to store data length
+	result = make([]byte, len(message.payload)+4)
+	result[1] = 126                      //extra storage needed
+	result[2] = byte(len(message.payload) >> 8) //& 255
+	result[3] = (length)                 //& 255
+	idxData = 4
+    } else {
+	result = make([]byte, len(message.payload)+10)
+	result[1] = 127
+	result[2] = byte(len(message.payload) >> 56) //& 255
+	result[3] = byte(len(message.payload) >> 48) //& 255
+	result[4] = byte(len(message.payload) >> 40) //& 255
+	result[5] = byte(len(message.payload) >> 32) //& 255
+	result[6] = byte(len(message.payload) >> 24) //& 255
+	result[7] = byte(len(message.payload) >> 16) //& 255
+	result[8] = byte(len(message.payload) >> 8)  //& 255
+	result[9] = byte(len(message.payload)) & 255
+	idxData = 10
+    }
+    result[0] = 129              //only text is supported
+    for i := range message.payload { // put raw data at the correct index
+	result[idxData+i] = message.payload[i]
+    }
 
-	return
-}
-
-/*
-trim byte array
-*/
-func trimByteArr(raw []byte) {
-	for i := range raw {
-		if raw[i] == 0 {
-			fmt.Print(i)
-		}
-	}
+    return
 }
 
 /*
@@ -63,61 +53,31 @@ func trimByteArr(raw []byte) {
  if val >= 127 read next 8 bytes (64 bits) as uint (MSB must be 0)
 */
 
-func decode(rawBytes []byte) string {
-	var idxMask int
-	if rawBytes[1]-128 == 126 {
-		idxMask = 4
-	} else if rawBytes[1]-128 == 127 {
-		idxMask = 10
-	} else {
-		idxMask = 2
-	}
-	var length = idxMask + 4
-	masks := rawBytes[idxMask : idxMask+4]
-	for i := idxMask + 4; i <= len(rawBytes); i++ {
-		if rawBytes[i] == 0 {
-			var control_ = true
-			for k := 1; k <= 10; k++ { //  check if the next 10 bytes are 0. TODO get a better algorithm for a checker
-				if rawBytes[i+k] != 0 {
-					control_ = false
-					break
-				}
-			}
-			if control_ {
-				length = i
-				break
-			}
-		}
-	}
-	data := rawBytes[idxMask+4 : length]
-	decoded := make([]byte, len(rawBytes)-idxMask+4)
+func decode(rawBytes []byte) (result *sokkMsg) {
+    var idxMask int
+    result = &sokkMsg{
+	fin:false,
+	opCode:int(0x7F & rawBytes[1]),
 
-	for i, b := range data {
-		decoded[i] = b ^ masks[i%4]
-	}
-	return string(decoded)
-}
+    }
+    //var mask = ((rawBytes[1] & 0x80) != 0)
+    var plLen = uint64(0x7F & rawBytes[1])
 
-//checks a upcode for
-//checks a upcode for
-func opcode(rawBytes []byte) int {
-	opcodeInt := 0
-	opcodeS := fmt.Sprintf("%08b", rawBytes[0])
-	opcodeS = opcodeS[4:len(opcodeS)]
-	//opcodes for 0,1,2,8,9,10
-	if opcodeS == "0000" { // continue
-		opcodeInt = 0
-	} else if opcodeS == "0001" { // text
-		opcodeInt = 1
-	} else if opcodeS == "0010" { // binary
-		opcodeInt = 2
-	} else if opcodeS == "1000" { // Close 0x8
-		opcodeInt = 8
-	} else if opcodeS == "1001" { // Ping 0x9
-		opcodeInt = 9
-	} else if opcodeS == "1010" { // Pong 0xA
-		opcodeInt = 10
-	}
-
-	return opcodeInt
+    if plLen == 126 {
+	idxMask = 4
+	plLen = uint64(binary.LittleEndian.Uint16(rawBytes[2:4])) // short
+    } else if plLen == 127 {
+	idxMask = 10
+	plLen = binary.LittleEndian.Uint64(rawBytes[2:10]) // long
+    } else {
+	idxMask = 2
+    }
+    masks := rawBytes[idxMask : idxMask+4]
+    result.payload = make([]byte,plLen)
+    result.payload = rawBytes[idxMask+4 : int(plLen)+idxMask+4]
+    for i := range result.payload {
+	result.payload[i] ^= masks[i%4]
+    }
+    result.plLen = plLen
+    return
 }

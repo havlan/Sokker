@@ -44,13 +44,13 @@ Why go?
 - Go uses GoRoutines which is a lightweight thread of execution. Less overhead, when blocking, the runtime moves other coroutines on the same operating system thread to a different.  
 - Go uses channels. Channels are the pipes that connect concurrent goroutines. Send into one and extract in the other.
 - To learn something new!  
-- **Thoughts on Go throughout the project?** Go can be used for many things, i'm not experienced in go, but i feel like i can do exactly everything i can do in go in another language. But go with channels can be amazingly good, it can make paralell programming "easy". And by that i mean that golang's thread model (goroutines) is quite easy and nice to use, both the normal way and the lambda way. But i still feel like i'm not in control, that is most likely the fact that this is our first go project.
+- **Thoughts on Go throughout the project?** Go can be used for many things, i'm not experienced in go, but i feel like i can do exactly everything i can do in go in another language. But go with channels can be amazingly good, it can make parallel programming "easy". And by that i mean that golang's thread model (goroutines) is quite easy and nice to use, both the normal way and the lambda way. But i still feel like i'm not in control, that is most likely since this is our first go project.
 
 So if I want to use this, what do i need to implement?
 Lets take the chat example:
 - You need a Sokk struct
 - You need to start it to listen
-- You need to decode the byte array / data recieved to a websocket frame
+- You need to decode the byte array / data received to a websocket frame
 - You need to encode the websocket frame to a byte array
 - You need to send the data to all your clients (ws.clients)
 
@@ -58,4 +58,4 @@ Lets take the chat example:
 
 
 
-So the whole thought about this library is that a goroutine listens to a connection. Which 
+So the whole thought about this library is that a goroutine listens to a connection. Which receives the data and sends it onwards. Another gorutine writes to the client(s). 

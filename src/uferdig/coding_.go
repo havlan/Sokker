@@ -1,6 +1,5 @@
 package uferdig
 
-
 import "fmt"
 
 func encode(message string) (result []byte) {
@@ -51,14 +50,13 @@ func decode(rawBytes []byte) string {
 		idxMask = 2
 	}
 
-	length := 6;
+	length := 6
 	for i := range rawBytes {
-		if rawBytes[i]==0 {
+		if rawBytes[i] == 0 {
 			length = i
 			break
 		}
 	}
-
 
 	masks := rawBytes[idxMask : idxMask+4]
 	data := rawBytes[idxMask+4 : length]
@@ -70,18 +68,17 @@ func decode(rawBytes []byte) string {
 	return string(decoded)
 }
 
-
 //checks a upcode for
-func opcode(rawBytes []byte) int{
-	opcodeInt := 0;
+func opcode(rawBytes []byte) int {
+	opcodeInt := 0
 	opcodeS := fmt.Sprintf("%08b", rawBytes[0])
-	opcodeS = opcodeS[4:len(opcodeS)];
-	if opcodeS == "1000" {		// Close 0x8
-		opcodeInt = 1;
-	} else if opcodeS == "1001" {  	// Ping 0x9
-		opcodeInt = 2;
-	}else if opcodeS  == "1010" {  	// Pong 0xA
-		opcodeInt = 2;
+	opcodeS = opcodeS[4:len(opcodeS)]
+	if opcodeS == "1000" { // Close 0x8
+		opcodeInt = 1
+	} else if opcodeS == "1001" { // Ping 0x9
+		opcodeInt = 2
+	} else if opcodeS == "1010" { // Pong 0xA
+		opcodeInt = 2
 	} //osv...
 
 	return opcodeInt

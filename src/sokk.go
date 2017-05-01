@@ -21,66 +21,57 @@ THE GOAL IS TO PARSE THIS
 package main
 
 import (
+	"bufio"
+	"bytes"
+	"crypto/sha1"
+	"encoding/base64"
+	"log"
 	"net"
 	"net/http"
 	"os"
-	"bufio"
-	"bytes"
-	"encoding/base64"
-	"crypto/sha1"
-	"log"
-	"fmt"
-	"pkg_t"
 )
-
 
 const (
-	CONN_TYPE = "tcp"
+	CONN_TYPE        = "tcp"
 	magic_server_key = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
-	OP_Continue = 0
-	OP_Text = 1
-	OP_Binary = 2
-	OP_Close = 8
-	OP_Ping = 9
-	OP_Pong = 10
+	OP_Continue      = 0
+	OP_Text          = 1
+	OP_Binary        = 2
+	OP_Close         = 8
+	OP_Ping          = 9
+	OP_Pong          = 10
 )
 
-func main (){
+func main() {
 	sokk := newSokk()
-	
-	xs := [] float64{1,2,3,4}// KUN
-	avg := pkg_t.Average(xs) // FOR
-	fmt.Println(avg)         // Å TESTE PACKAGE!
-	
-	
-	go sokk.Start("127.0.0.1","3001") // localhost:3000
+
+	go sokk.Start("127.0.0.1", "3001") // localhost:3000
 	http.Handle("/", http.FileServer(http.Dir("../static")))
 	http.ListenAndServe(":3000", nil)
 }
 
-
 type sokk struct {
 	clients []net.Conn
-	
 }
 
-func newSokk() *sokk{
-	sokk :=&sokk{
-		clients:make([]net.Conn,0),
+func newSokk() *sokk {
+	sokk := &sokk{
+		clients: make([]net.Conn, 0),
 	}
 	return sokk
 }
+
 /*
 	func (*web_sokker) Add(net.Conn)
 	takes a net connection and adds to the client list
- */
-func (ws *sokk) Add(c net.Conn){
+*/
+func (ws *sokk) Add(c net.Conn) {
 	ws.clients = append(ws.clients, c) // new client
-	log.Println(c.RemoteAddr()," connected, ",len(ws.clients)," client[s] connected now.")
+	log.Println(c.RemoteAddr(), " connected, ", len(ws.clients), " client[s] connected now.")
 }
 
-func(ws *sokk) Start(ad string, port string) {
-	listener, err := net.Listen(CONN_TYPE, ad + ":" +port)
+func (ws *sokk) Start(ad string, port string) {
+	listener, err := net.Listen(CONN_TYPE, ad+":"+port)
 	if err != nil {
 		log.Println("Error listening:", err.Error())
 		os.Exit(1)
@@ -100,24 +91,23 @@ func(ws *sokk) Start(ad string, port string) {
 	}
 }
 
-func (ws *sokk) Close(){
-	for i := range ws.clients{
+func (ws *sokk) Close() {
+	for i := range ws.clients {
 		ws.clients[i].Close()
 	}
 }
-
 
 /*
 	func handler(net.Conn)
 	initiates the handshake process which is required
 	handler does handshake
 	starts the read loop from the user
- */
-func(ws *sokk) handler(c net.Conn) {
+*/
+func (ws *sokk) handler(c net.Conn) {
 	ok := ws.handshake(c)
-	if ok{
-		for{
-			buff := make([]byte,512)
+	if ok {
+		for {
+			buff := make([]byte, 512)
 			c.Read(buff)
 			opcode := opcode(buff)
 			switch opcode {
@@ -136,20 +126,20 @@ func(ws *sokk) handler(c net.Conn) {
 				log.Println("OP Code Close")
 				ws.close_r(c)
 				break
-			case OP_Ping:  // 9
+			case OP_Ping: // 9
 				log.Println("Op Code Ping")
-			
+
 			case OP_Pong: // 10
 				log.Println("OP Code Pong")
 			default:
-				log.Println("No familiar op code from client:",opcode)
+				log.Println("No familiar op code from client:", opcode)
 				data := decode(buff)
 				go ws.sendData(encode(data))
 				//reset op code?
 				opcode = -1
 			}
 			opcode = -1
-			
+
 		}
 	}
 }
@@ -157,10 +147,10 @@ func(ws *sokk) handler(c net.Conn) {
 /*
 	func sendData(bytes[])
 	sends a websocket frame to all the clients
- */
+*/
 
-func(ws *sokk) sendData(buff []byte){
-	for i := range ws.clients{
+func (ws *sokk) sendData(buff []byte) {
+	for i := range ws.clients {
 		ws.clients[i].Write(buff)
 	}
 }
@@ -169,9 +159,9 @@ func(ws *sokk) sendData(buff []byte){
 	func handshake(net.Conn)
 	Sends a client to parse the key, it either gets rejected(bad request) or accepted => 101 status code
 	101 statuscode is switching protocols, because we are going over to websockets
- */
+*/
 
-func(ws *sokk) handshake(client net.Conn) bool{
+func (ws *sokk) handshake(client net.Conn) bool {
 	status, key := parseKey(client)
 	if status != 101 {
 		//reject
@@ -192,11 +182,12 @@ func(ws *sokk) handshake(client net.Conn) bool{
 		return true
 	}
 }
+
 /*
 	func parseKey(net.Conn) (httpStatus int, errcode string)
 	Parses the header first sent by client
 	Returns http statuscodes and a string/errstring
- */
+*/
 
 func parseKey(client net.Conn) (code int, k string) {
 	bufReader := bufio.NewReader(client) // TODO Double trouble? this coud very well be a client instead
@@ -211,10 +202,11 @@ func parseKey(client net.Conn) (code int, k string) {
 		return http.StatusSwitchingProtocols, key
 	}
 }
+
 /*
 	Client did not pass upgrade handshake, so the client gets rejected
 	Returns a standard request, with bad request as status
- */
+*/
 func reject(client net.Conn) {
 	var buff bytes.Buffer
 	buff.WriteString("HTTP/1.1 400 Bad Request\r\n")
@@ -223,23 +215,25 @@ func reject(client net.Conn) {
 	client.Write(buff.Bytes())
 	client.Close()
 }
+
 /*
 	func magic_str(in string) (key string)
 	takes the key from the clients request, and appends the wskey
 	sha1 that sum and returns that string
- */
-func magic_str(str string)(keyz string){
-	h:=sha1.New()
+*/
+func magic_str(str string) (keyz string) {
+	h := sha1.New()
 	h.Write([]byte(str))
 	keyz = base64.StdEncoding.EncodeToString(h.Sum(nil))
 	return
 }
+
 /*
 	func close_r(net.Conn)
 	removes the connection from the list. If the user count is low,
- */
-func (ws *sokk) close_r(c net.Conn){
-	for i := range ws.clients{
+*/
+func (ws *sokk) close_r(c net.Conn) {
+	for i := range ws.clients {
 		if ws.clients[i] == c {
 			c.Close()
 			ws.clients = append(ws.clients[:i], ws.clients[i+1:]...) // delete from slice

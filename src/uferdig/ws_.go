@@ -21,14 +21,14 @@ THE GOAL IS TO PARSE THIS
 package uferdig
 
 import (
+	"bufio"
+	"bytes"
+	"crypto/sha1"
+	"encoding/base64"
+	"log"
 	"net"
 	"net/http"
 	"os"
-	"bufio"
-	"bytes"
-	"encoding/base64"
-	"crypto/sha1"
-	"log"
 )
 
 func main() {
@@ -42,38 +42,38 @@ func main() {
 }
 
 const (
-	CONN_HOST = "localhost"
-	CONN_PORT = "3001"
-	CONN_TYPE = "tcp"
+	CONN_HOST        = "localhost"
+	CONN_PORT        = "3001"
+	CONN_TYPE        = "tcp"
 	magic_server_key = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
-	OP_Continue = 0
-	OP_Text = 1
-	OP_Binary = 2
-	OP_Close = 8
-	OP_Ping = 9
-	OP_Pong = 10
+	OP_Continue      = 0
+	OP_Text          = 1
+	OP_Binary        = 2
+	OP_Close         = 8
+	OP_Ping          = 9
+	OP_Pong          = 10
 )
+
 type web_sokker struct {
 	clients []*client_
-	joins chan net.Conn
-	inc chan string
-	out chan string
+	joins   chan net.Conn
+	inc     chan string
+	out     chan string
 }
 
-func new_web_sokker() *web_sokker{
-	ws :=&web_sokker{
-		clients:make([]*client_,0),
-		joins : make(chan net.Conn),
-		inc : make(chan string),
-		out : make(chan string),
+func new_web_sokker() *web_sokker {
+	ws := &web_sokker{
+		clients: make([]*client_, 0),
+		joins:   make(chan net.Conn),
+		inc:     make(chan string),
+		out:     make(chan string),
 	}
 	ws.Listen()
 	return ws
 }
 
-
-func (ws *web_sokker) Init(){
-	listener, err := net.Listen("tcp","localhost:3001")
+func (ws *web_sokker) Init() {
+	listener, err := net.Listen("tcp", "localhost:3001")
 	if err != nil {
 		log.Println("Error listening:", err.Error())
 		os.Exit(1)
@@ -93,37 +93,38 @@ func (ws *web_sokker) Init(){
 
 }
 
-func (ws *web_sokker) Broadcast(d string){
+func (ws *web_sokker) Broadcast(d string) {
 
 	//TODO IMPLEMENT WEBSOCKET FRAME HERE
 
-
-	for _, c := range ws.clients{
+	for _, c := range ws.clients {
 		c.out <- d
 	}
 }
+
 //adds a client to connected, and connects incoming ws messages to the client.
 /*
 func (*web_sokker) Add(net.Conn)
 takes a net connection and adds to the client list
- */
-func (ws *web_sokker) Add(c net.Conn){
-	new_client:= new_client_(c)
+*/
+func (ws *web_sokker) Add(c net.Conn) {
+	new_client := new_client_(c)
 	ws.clients = append(ws.clients, new_client) // new client
 	//lambda
-	go func(){
+	go func() {
 		for {
-			ws.inc <- <- new_client.inc // add new client incoming to ws inc
+			ws.inc <- <-new_client.inc // add new client incoming to ws inc
 		}
 	}()
 }
+
 /*
 func (ws *web_sokker) Listen()
 listens to the channels, if the channel gets data. Send that data to decode => frame => broadcast
- */
-func (ws *web_sokker) Listen(){
-	go func(){
-		for{
+*/
+func (ws *web_sokker) Listen() {
+	go func() {
+		for {
 			select {
 			//case http := <-  // ??????
 
@@ -138,7 +139,7 @@ func (ws *web_sokker) Listen(){
 	}()
 }
 
-func(ws *web_sokker) startWss() {
+func (ws *web_sokker) startWss() {
 	log.Println("Listen for incoming connections.")
 	listener, err := net.Listen(CONN_TYPE, CONN_HOST+":"+CONN_PORT)
 	if err != nil {
@@ -164,8 +165,8 @@ func(ws *web_sokker) startWss() {
 func handler(net.Conn)
 initiates the handshake process which is required
 handler does handshake
- */
-func(ws *web_sokker) handler(client net.Conn) {
+*/
+func (ws *web_sokker) handler(client net.Conn) {
 	ws.handshake(client)
 }
 
@@ -173,24 +174,24 @@ func(ws *web_sokker) handler(client net.Conn) {
 func magic_str(in string) (key string)
 takes the key from the clients request, and appends the wskey
 sha1 that sum and returns that string
- */
+*/
 
-func magic_str(str string)(keyz string){
-	h:=sha1.New()
+func magic_str(str string) (keyz string) {
+	h := sha1.New()
 	h.Write([]byte(str))
 	keyz = base64.StdEncoding.EncodeToString(h.Sum(nil))
 	return
 }
 
 //unused?
-func recv_data(client net.Conn){
+func recv_data(client net.Conn) {
 	reply := make([]byte, 64)
 	client.Read(reply)
 	upcodeInt := opcode(reply)
-	if upcodeInt == 1{
+	if upcodeInt == 1 {
 		log.Println("avbryter klient")
 		client.Close()
-	}else{
+	} else {
 		log.Println("fortsetter klient")
 		decoded := decode(reply)
 		encoded := encode(decoded)
@@ -203,9 +204,9 @@ func recv_data(client net.Conn){
 func handshake(net.Conn)
 Sends a client to parse the key, it either gets rejected(bad request) or accepted => 101 status code
 101 statuscode is switching protocols, because we are going over to websockets
- */
+*/
 
-func(ws *web_sokker) handshake(client net.Conn) {
+func (ws *web_sokker) handshake(client net.Conn) {
 	status, key := parseKey(client)
 	if status != 101 {
 		//reject
@@ -231,7 +232,7 @@ func(ws *web_sokker) handshake(client net.Conn) {
 func parseKey(net.Conn) (httpStatus int, errcode string)
 Parses the header first sent by client
 Returns http statuscodes and a string/errstring
- */
+*/
 
 func parseKey(client net.Conn) (code int, k string) {
 	bufReader := bufio.NewReader(client)
@@ -247,11 +248,10 @@ func parseKey(client net.Conn) (code int, k string) {
 	}
 }
 
-
 /*
 Client did not pass upgrade handshake, so the client gets rejected
 Returns a standard request, with bad request as status
- */
+*/
 func reject(client net.Conn) {
 	var buff bytes.Buffer
 	buff.WriteString("HTTP/1.1 400 Bad Request\r\n")

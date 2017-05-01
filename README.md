@@ -4,7 +4,7 @@
 
 - [X] Client-Server communication
 - [X] Client1-Server-Client2 communicaiton
-- [ ] Sequence Diagram
+- [ ] Sequence Diagram
 - [ ] GIF to show example
 - [X] ExampleCode1
 - [ ] ExampleCode2

@@ -40,7 +40,6 @@ $(document).ready(function () {
     messages = new Messages($('#messages-ter'));
     $('#send').click((event) => {
         console.log("hei");
-    //console.log(event)
     messages.on_send(event);
     });
 });

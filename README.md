@@ -1,5 +1,5 @@
 # Sokker
-![Alt text](/logo/sokker2.jpg?raw=true "Optional Title")
+![Alt text](/logo/sokker2.jpg?raw=true "Sokker logo")
 
 
 - [X] Client-Server communication

@@ -10,13 +10,7 @@
   - **GOROOT** to the installation directory ex. /usr/local/go
   - **Path** to the bin subdirectory of GOROOT $GOROOT/bin (/usr/local/go/bin)
   - **GOPATH** to a workspace. A workspace consists of a root directory and a src subdirectory. Ex. /home/myname/GoglandProjects
-  - So it looks like this:
-  - Goglandprojects (where my gopath is set to)
-     - src 
-       - github.com
-         - havlan
-	 	- Sokker
-			- src
+  
   
 ### Installation
 
@@ -25,11 +19,12 @@
 go get github.com/havlan/Sokker
 go test github.com/havlan/Sokker/test -v
 ```
+If you are in your gopath/src directory
 ```
-#If you are in your gopath/src directory
 cd github.com/havlan/Sokker/examples && go run Example_http.go 
-#Now localhost:3000 hopefully shows a chat.
 ```
+Now localhost:3000 hopefully shows a chat.
+
 
 
 

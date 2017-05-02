@@ -27,7 +27,7 @@ go test github.com/havlan/Sokker/test -v
 ```
 ```
 If you are in your gopath/src directory
-cd github.com/havlan/Sokker/examples && run Example_http.go 
+cd github.com/havlan/Sokker/examples && go run Example_http.go 
 Now localhost:3000 hopefully shows a chat.
 ```
 

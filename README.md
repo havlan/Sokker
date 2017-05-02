@@ -2,60 +2,82 @@
 ![Alt text](/logo/sokker2.jpg?raw=true "Sokker logo")
 
 
-- [X] Client-Server communication
-- [X] Client1-Server-Client2 communicaiton
-- [ ] Sequence Diagram
-- [ ] GIF to show example
-- [X] ExampleCode1
-- [ ] ExampleCode2
-- [ ] Continuation Frame (no pri)
-- [ ] Ping
-- [ ] Pong
-- [X] OP-Codes
-- [X] WS-Frame
-- [ ] Accept different data
 
 **FIRST GO PROJECT! BEWARE!**
+### Prerequisites
+- Git
+- Go 1.8 and working go environment
+  - **GOROOT** to the installation directory ex. /usr/local/go
+  - **Path** to the bin subdirectory of GOROOT $GOROOT/bin (/usr/local/go/bin)
+  - **GOPATH** to a workspace. A workspace consists of a root directory and a src subdirectory. Ex. /home/myname/GoglandProjects
+  - So it looks like this:
+  - Goglandprojects (where my gopath is set to)
+     - src 
+       - github.com
+         - havlan
+	 	- Sokker
+			- src
+  
+### Installation
 
-```golang
-
+**Check your environment with "go env"**
+```
+go get github.com/havlan/Sokker
+```
+```
+If you are in your gopath/src directory
+cd github.com && cd havlan && cd Sokker && cd Examples && go run Example_http.go 
 ```
 
-### Example usage
-**No out of the box functionality until we understand golang's interfaces**
-But it's still more than usable!
+### Examples
+The file Example_http.go
 
-Example #1 (full code under examples)
 ```golang
+package main
+
+import (
+	"fmt"
+	"net"
+	ws "github.com/havlan/Sokker/src" // alias and then import/path/to/correct/package. 
+	"net/http"      // you can skip the alias bit. Then the way to use it is sokk.MethodName
+)
+
+
 func main() {
-	sokk := NewSokk()
+	sokk := ws.NewSokk()
 	
-	sokk.OnClose = func(){
+	//onClose client is already removed from the list.
+	sokk.OnClose = func(c net.Conn){
 		fmt.Println("OnClose!")
 	}
 	sokk.OnConnection = func(c net.Conn){
-		fmt.Println("NEW CONNECTION!")
+		fmt.Println("NEW CONNECTIONS!")
 		sokk.Clients = append(sokk.Clients,c) // add the user into the accepted client list
 	}
 	sokk.OnError = func(w string, e error){ // custom handle error
 		fmt.Println(w, " ", e.Error())
-		os.Exit(1)
+		panic(e)
 		
 	}
-	sokk.OnMessage = func(b SokkMsg){
+	sokk.OnMessage = func(b ws.SokkMsg){
 		fmt.Println(string(b.Payload[:b.PlLen])) // prints the data
-		sokk.Send(&b)                             // sends to all Clients which exists in the sockets array of connections
+		sokk.Send(&b) // sends to all Clients which exists in the sockets array of connections
 		
 	}
-	go sokk.Start("127.0.0.1", "3001") // localhost:3000
+	//handle http on main thread, socket gets new goroutine
+	go sokk.Start("127.0.0.1", "3001") // localhost:3001
 	http.Handle("/", http.FileServer(http.Dir("../static")))
 	http.ListenAndServe("localhost:3000", nil)
 }
 
 ```
-That was the entire main method!
 
-### Responses
+### Example usage
+Example HTTP/WS (full code under examples)
+```golang
+
+```
+That was the entire main method!
 
 ### Architecture
 
@@ -64,14 +86,6 @@ Why go?
 - Go uses channels. Channels are the pipes that connect concurrent goroutines. Send into one and extract in the other.
 - To learn something new!  
 - **Thoughts on Go throughout the project?** Go can be used for many things, i'm not experienced in go, but i feel like i can do exactly everything i can do in go in another language. But go with channels can be amazingly good, it can make parallel programming "easy". And by that i mean that golang's thread model (goroutines) is quite easy and nice to use, both the normal way and the lambda way. But i still feel like i'm not in control, that is most likely since this is our first go project.
-
-So if I want to use this, what do i need to implement?
-Lets take the chat example:
-- You need a Sokk struct
-- You need to start it to listen
-- You need to decode the byte array / data received to a websocket frame
-- You need to encode the websocket frame to a byte array
-- You need to send the data to all your clients (ws.clients)
 
 
 

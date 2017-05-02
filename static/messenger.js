@@ -23,7 +23,6 @@ class Messages {
 
         };
         this.ws.onerror = (error) =>{
-            $("footer").style.backgroundColor ='red';
             $("#connection_label").html("Not connected");
         };
         this.ws.onopen = () =>{
@@ -34,6 +33,8 @@ class Messages {
             $("#connection_label").html("Not connected");
         };
     }
+
+
 
     on_send(event) {
         var name = $('#name').val();

@@ -1,7 +1,8 @@
 <!DOCTYPE HTML>
 <html>
 <head>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+          integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
     <script src="jquery-3.2.0.min.js" type="text/javascript"></script>
     <script type="text/javascript" src="messenger.js"></script>
     <link rel="stylesheet" href="stylesheet.css">
@@ -12,20 +13,28 @@
 <div class="center" id="mainbox">
     <div class="scroll-area" id="messages-div">
     </div>
-    <div style="width: 50%">
-        <p>Name</p>
-        <input type="text" id="name">
+    <div id="form" class="row">
+        <div class="col-xs-4">
+            <div class="form-group">
+                <label>Name</label>
+                <input type="text" class="form-control" id="name">
+            </div>
+        </div>
+        <div class="col-xs-8">
+            <div class="form-group">
+                <label>Message</label>
+                <input type="text" class="form-control" id="msg">
+            </div>
+        </div>
+        <div class="col-xs-12">
+            <div id="connection_label" style="color: aliceblue">
+                Connecting...
+            </div>
+        </div>
+        <div class="col-xs-12">
+            <br/>
+            <button id="send" class="btn btn-info">Send</button>
+        </div>
     </div>
-    <div style="width: 50%">
-        <p>Msg</p>
-        <input type="text" id="msg">
-    </div>
-    <button id="send" style="margin-top: 10px">Respect the send</button>
-</div>
-<footer>
-    <div id="connection_label">
-        Connecting...
-    </div>
-</footer>
 </body>
 </html>

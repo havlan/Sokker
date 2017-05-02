@@ -14,13 +14,12 @@
    *Make sure your GOPATH looks something like this* 
      ```
       GOPATH
-      └───src
-      	└───websocket
-      │   │   	encoding.go
-      │   │   	handshake.go
-      │   │		websocketserver.go
-      │
-      │
+      └───github.com
+      	└───havlan
+      	    └───Sokker
+             	│    coding.go
+             	│    message.go
+         		│    sokk.go
     ```
   
 ### Installation

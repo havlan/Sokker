@@ -23,11 +23,15 @@
 **Check your environment with "go env"**
 ```
 go get github.com/havlan/Sokker
+go test github.com/havlan/Sokker/test -v
 ```
 ```
 If you are in your gopath/src directory
-cd github.com && cd havlan && cd Sokker && cd Examples && go run Example_http.go 
+cd github.com/havlan/Sokker/examples && run Example_http.go 
+Now localhost:3000 hopefully shows a chat.
 ```
+
+
 
 ### Examples
 The file Example_http.go
@@ -71,13 +75,44 @@ func main() {
 }
 
 ```
+All the other examples and the basic usage of this library is based on the functions OnClose, OnConnection, OnError and OnMessage.
+Add a logger to log both messages and errors (Example_log.go)
 
-### Example usage
-Example HTTP/WS (full code under examples)
 ```golang
+f,err := os.Create("logfile.txt")
+	if err != nil {
+		sokk.OnError("Error creating logfile for errors(ironic)",err)
+	}
+	defer f.Close()
+	var errBuff =  bufio.NewWriter(f)
+//the onError method
+sokk.OnError = func(w string, e error){ // custom handle error
+		fmt.Println(w, " ", e.Error())
+		errBuff.WriteString(time.Now().String())
+		errBuff.WriteString(w)
+		errBuff.WriteString(e.Error())
+		f.Sync()
+		errBuff.Flush()
+		os.Exit(1)
+	}
+//setup message logger
+msgFile, errMs := os.Create("messages.txt")
+if errMs != nil{
+	sokk.OnError("Error creating logfile for messages", errMs)
+}
+defer msgFile.Close()
+sokk.OnMessage = func(b ws.SokkMsg){
+		fmt.Println(string(b.Payload[:b.PlLen]))// prints the data
+		msgBuff.WriteString(time.Now().String() + " ")
+		msgBuff.Write(b.Payload[:b.PlLen])
+		msgBuff.WriteString("\n")
+		msgFile.Sync() // sync file writing
+		msgBuff.Flush()
+		sokk.Send(&b) // sends to all Clients which exists in the sockets array of connections
+	}
 
 ```
-That was the entire main method!
+
 
 ### Architecture
 

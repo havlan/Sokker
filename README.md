@@ -27,7 +27,7 @@
 From GOPATH
 ```
 go get github.com/havlan/Sokker
-go test src/github.com/havlan/Sokker/test -v
+go test github.com/havlan/Sokker/test -v
 ```
 
 ```

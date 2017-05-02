@@ -79,6 +79,7 @@ type Sokk struct {
 
 
 
+
 func NewSokk() *Sokk {
 	sokk := &Sokk{
 		Clients: make([]net.Conn, 0),

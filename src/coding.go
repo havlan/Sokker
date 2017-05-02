@@ -74,3 +74,4 @@ func decode(rawBytes []byte) (result *SokkMsg) {
 	result.plLen = plLen
 	return
 }
+

@@ -18,7 +18,7 @@ THE GOAL IS TO PARSE THIS
 +---------------------------------------------------------------+
 */
 
-package main
+package sokk
 
 import (
 	"bufio"
@@ -50,6 +50,7 @@ func main() {
 		fmt.Println("OnClose!")
 	}
 	sokk.OnConnection = func(c net.Conn){
+		fmt.Println("NEW CONNECTION!")
 		sokk.Clients = append(sokk.Clients,c) // add the user into the accepted client list
 	}
 	sokk.OnError = func(w string, e error){ // custom handle error
@@ -58,12 +59,10 @@ func main() {
 		
 	}
 	sokk.OnMessage = func(b SokkMsg){
-		fmt.Println(string(b.payload[:b.plLen])) // prints the data
-		sokk.Send(b) // sends to all Clients which exists in the sockets array of connections
+		fmt.Println(string(b.Payload[:b.PlLen])) // prints the data
+		sokk.Send(&b)                             // sends to all Clients which exists in the sockets array of connections
 		
 	}
-	
-	
 	go sokk.Start("127.0.0.1", "3001") // localhost:3000
 	http.Handle("/", http.FileServer(http.Dir("../static")))
 	http.ListenAndServe("localhost:3000", nil)
@@ -78,8 +77,6 @@ type Sokk struct {
 }
 
 
-
-
 func NewSokk() *Sokk {
 	sokk := &Sokk{
 		Clients: make([]net.Conn, 0),
@@ -91,9 +88,8 @@ func NewSokk() *Sokk {
 	func (*web_sokker) Add(net.Conn)
 	takes a net connection and adds to the client list
 */
-func (ws *Sokk) Add(c net.Conn) {
+func (ws *Sokk) Add(c net.Conn) { // TODO REMOVE?
 	ws.Clients = append(ws.Clients, c) // new client
-	
 }
 
 func (ws *Sokk) Start(ad string, port string) {
@@ -133,9 +129,12 @@ func (ws *Sokk)handler(c *net.Conn) {
 		for {
 			buff := make([]byte, 512)
 			(*c).Read(buff)
-			var opC = int(0x7F & buff[1])
+			var opC = int(0x7F & buff[0])
+			//fmt.Println(opC)
 			if opC == 8 {
-				ws.close_r((*c))
+				fmt.Println("CLOSE")
+				ws.close_r(*c)
+				break
 			}else if opC == 9 {
 				response := make([]byte,2)
 				response[0] = byte(138)
@@ -160,11 +159,13 @@ func (ws *Sokk) prep_msg(buff []byte){
 	sends a websocket frame to all the Clients
 */
 
-func (ws *Sokk) Send(m SokkMsg) {
-	var msg = encode(&m)
+func (ws *Sokk) Send(m *SokkMsg) {
+	var msg = encode(m)
+	fmt.Println(len(ws.Clients))
 	for i := range ws.Clients {
 		ws.Clients[i].Write(msg)
 	}
+	
 }
 
 /*
@@ -245,12 +246,13 @@ func magic_str(str string) (keyz string) {
 */
 func (ws *Sokk) close_r(c net.Conn) {
 	for i := range ws.Clients {
-	if ws.Clients[i] != nil{
+		if ws.Clients[i] != nil{
 			if ws.Clients[i] == c {
-			c.Close()
-			ws.Clients = append(ws.Clients[:i], ws.Clients[i+1:]...) // delete from slice
+				c.Close()
+				ws.Clients = append(ws.Clients[:i], ws.Clients[i+1:]...) // delete from slice
+				break
+			}
 		}
-	}
 	}
 	ws.OnClose()
 }

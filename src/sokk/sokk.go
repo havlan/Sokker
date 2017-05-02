@@ -84,14 +84,6 @@ func NewSokk() *Sokk {
 	return sokk
 }
 
-/*
-	func (*web_sokker) Add(net.Conn)
-	takes a net connection and adds to the client list
-*/
-func (ws *Sokk) Add(c net.Conn) { // TODO REMOVE?
-	ws.Clients = append(ws.Clients, c) // new client
-}
-
 func (ws *Sokk) Start(ad string, port string) {
 	listener, err := net.Listen(CONN_TYPE, ad+":"+port)
 	if err != nil {

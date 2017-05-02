@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"net"
-	ws "Sokker/src"
+	ws "github.com/havlan/Sokker/src"
 	"net/http"
 )
 
@@ -28,11 +28,8 @@ func main() {
 		sokk.Send(&b) // sends to all Clients which exists in the sockets array of connections
 		
 	}
-	
 	//handle http on main thread, socket gets new goroutine
-	
-	go sokk.Start("127.0.0.1", "3001") // localhost:3000
-	
+	go sokk.Start("127.0.0.1", "3001") // localhost:3001
 	http.Handle("/", http.FileServer(http.Dir("../static")))
 	http.ListenAndServe("localhost:3000", nil)
 }

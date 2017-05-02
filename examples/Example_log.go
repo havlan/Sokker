@@ -1,12 +1,13 @@
 package main
 
 import (
-	ws "Sokker/src"
+	ws "github.com/havlan/Sokker/src"
 	"fmt"
 	"net"
 	"os"
 	"bufio"
 	"time"
+	"net/http"
 )
 
 func main() {
@@ -18,14 +19,14 @@ func main() {
 	defer f.Close()
 	
 	
-	wf,err2 := os.Create("messages.txt")
-	if err2 != nil{
-		sokk.OnError("Error creating logfile for messages",err2)
+	msgFile, errMs := os.Create("messages.txt")
+	if errMs != nil{
+		sokk.OnError("Error creating logfile for messages", errMs)
 	}
-	defer wf.Close()
+	defer msgFile.Close()
 	
 	var errBuff =  bufio.NewWriter(f)
-	var msgBuff = bufio.NewWriter(wf)
+	var msgBuff = bufio.NewWriter(msgFile)
 	//onClose client is already removed from the list.
 	sokk.OnClose = func(c net.Conn){
 		fmt.Println("OnClose!")
@@ -40,21 +41,21 @@ func main() {
 		errBuff.WriteString(time.Now().String())
 		errBuff.WriteString(w)
 		errBuff.WriteString(e.Error())
-		f.Sync()
+		f.Sync()// Sync commits the current contents of the file to stable storage. Typically, this means flushing the file system's in-memory copy of recently written data to disk.
 		errBuff.Flush()
 		os.Exit(1)
-		
 	}
 	sokk.OnMessage = func(b ws.SokkMsg){
 		fmt.Println(string(b.Payload[:b.PlLen]))// prints the data
 		msgBuff.WriteString(time.Now().String() + " ")
 		msgBuff.Write(b.Payload[:b.PlLen])
 		msgBuff.WriteString("\n")
-		wf.Sync() // sync file writing
+		msgFile.Sync() // Sync commits the current contents of the file to stable storage. Typically, this means flushing the file system's in-memory copy of recently written data to disk.
 		msgBuff.Flush()
 		sokk.Send(&b) // sends to all Clients which exists in the sockets array of connections
 	}
-	sokk.Start("127.0.0.1", "3001") // localhost:3000
-	//http.Handle("/", http.FileServer(http.Dir("../static")))
-	//http.ListenAndServe("localhost:3000", nil)
+	//if you are going to have a websocket and httpserver running together, one of them needs to get "go"ing (goroutine)
+	go sokk.Start("127.0.0.1", "3001") // localhost:3000
+	http.Handle("/", http.FileServer(http.Dir("../static")))
+	http.ListenAndServe("localhost:3000", nil)
 }

@@ -1,6 +1,6 @@
 package main
 import (
-	ws "Sokker/src"
+	ws "github.com/havlan/Sokker/src"
 	"fmt"
 	"net"
 	"os"
@@ -27,6 +27,4 @@ func main() {
 		sokk.Send(&b) // sends to all Clients which exists in the sockets array of connections
 	}
 	sokk.Start("127.0.0.1", "3001") // localhost:3000
-	//http.Handle("/", http.FileServer(http.Dir("../static")))
-	//http.ListenAndServe("localhost:3000", nil)
 }

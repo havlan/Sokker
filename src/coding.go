@@ -5,7 +5,7 @@ import (
 )
 
 
-func encode(message *SokkMsg) (result []byte) {
+func Encode(message *SokkMsg) (result []byte) {
 	var idxData int
 	length := byte(len(message.Payload))
 	if len(message.Payload) <= 125 { //one byte to store data length
@@ -47,15 +47,13 @@ func encode(message *SokkMsg) (result []byte) {
 	 if val >= 127 read next 8 bytes (64 bits) as uint (MSB must be 0)
 */
 
-func decode(rawBytes []byte) (result *SokkMsg) {
+func Decode(rawBytes []byte) (result *SokkMsg) {
 	var idxMask int
 	result = &SokkMsg{
-		Fin:    false,
-		OpCode: int(0x7F & rawBytes[1]),
+		Fin:(rawBytes[0] & 0x80) != 0,
+		OpCode: int(0x7F & rawBytes[0]),
 	}
-	//var mask = ((rawBytes[1] & 0x80) != 0)
 	var plLen = uint64(0x7F & rawBytes[1])
-	
 	if plLen == 126 {
 		idxMask = 4
 		plLen = uint64(binary.LittleEndian.Uint16(rawBytes[2:4])) // short

@@ -1,7 +1,6 @@
 package main
-
 import (
-	ws "Sokker/src/sokk"
+	ws "Sokker/src"
 	"fmt"
 	"net"
 	"os"
@@ -10,9 +9,9 @@ import (
 func main() {
 	sokk := ws.NewSokk()
 	
-	//onClose client is already removed from the list.
-	sokk.OnClose = func(){
-		fmt.Println("OnClose!")
+	//you can both manually close the connection, the method takes care of it
+	sokk.OnClose = func(c net.Conn){
+		fmt.Println("Closed a connection to: ", c.RemoteAddr().String())
 	}
 	sokk.OnConnection = func(c net.Conn){
 		fmt.Println("NEW CONNECTIONS!")
@@ -26,7 +25,6 @@ func main() {
 	sokk.OnMessage = func(b ws.SokkMsg){
 		fmt.Println(string(b.Payload[:b.PlLen])) // prints the data
 		sokk.Send(&b) // sends to all Clients which exists in the sockets array of connections
-		
 	}
 	sokk.Start("127.0.0.1", "3001") // localhost:3000
 	//http.Handle("/", http.FileServer(http.Dir("../static")))

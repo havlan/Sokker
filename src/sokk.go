@@ -28,13 +28,11 @@ import (
 	"log"
 	"net"
 	"net/http"
-	"os"
-	"fmt"
 )
 
 const (
 	CONN_TYPE        = "tcp"
-	magic_server_key = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
+	Magic_server_key = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
 	OP_Continue      = 0
 	OP_Text          = 1
 	OP_Binary        = 2
@@ -43,37 +41,12 @@ const (
 	OP_Pong          = 10
 )
 
-func main() {
-	sokk := NewSokk()
-	
-	sokk.OnClose = func(){
-		fmt.Println("OnClose!")
-	}
-	sokk.OnConnection = func(c net.Conn){
-		fmt.Println("NEW CONNECTION!")
-		sokk.Clients = append(sokk.Clients,c) // add the user into the accepted client list
-	}
-	sokk.OnError = func(w string, e error){ // custom handle error
-		fmt.Println(w, " ", e.Error())
-		os.Exit(1)
-		
-	}
-	sokk.OnMessage = func(b SokkMsg){
-		fmt.Println(string(b.Payload[:b.PlLen])) // prints the data
-		sokk.Send(&b)                             // sends to all Clients which exists in the sockets array of connections
-		
-	}
-	go sokk.Start("127.0.0.1", "3001") // localhost:3000
-	http.Handle("/", http.FileServer(http.Dir("../static")))
-	http.ListenAndServe("localhost:3000", nil)
-}
-
 type Sokk struct {
 	Clients      []net.Conn
 	OnMessage    func(msg SokkMsg)
 	OnError      func (w string,e error)
 	OnConnection func (c net.Conn)
-	OnClose      func ()
+	OnClose      func (c net.Conn)
 }
 
 
@@ -120,11 +93,14 @@ func (ws *Sokk)handler(c *net.Conn) {
 	if ok {
 		for {
 			buff := make([]byte, 512)
-			(*c).Read(buff)
+			_,err :=(*c).Read(buff)
+			if(err != nil){
+				ws.Close_wErr(*c)
+				ws.OnError("Error reading from client. ",err)
+				break
+			}
 			var opC = int(0x7F & buff[0])
-			//fmt.Println(opC)
 			if opC == 8 {
-				fmt.Println("CLOSE")
 				ws.close_r(*c)
 				break
 			}else if opC == 9 {
@@ -138,11 +114,14 @@ func (ws *Sokk)handler(c *net.Conn) {
 		}
 	}
 }
-
+/*
+	func prep_msg(buff[]byte)
+	creates a websocket frame of incoming data then calls the user specified OnMessage method.
+*/
 func (ws *Sokk) prep_msg(buff []byte){
-	var frame = decode(buff)
+	var frame = Decode(buff)
 	ws.OnMessage(*frame)
-	//var buffTosend = encode(frame)
+	//var buffTosend = Encode(frame)
 	//ws.Send(buffTosend)
 }
 
@@ -150,10 +129,8 @@ func (ws *Sokk) prep_msg(buff []byte){
 	func Send(bytes[])
 	sends a websocket frame to all the Clients
 */
-
 func (ws *Sokk) Send(m *SokkMsg) {
-	var msg = encode(m)
-	fmt.Println(len(ws.Clients))
+	var msg = Encode(m)
 	for i := range ws.Clients {
 		ws.Clients[i].Write(msg)
 	}
@@ -165,7 +142,6 @@ func (ws *Sokk) Send(m *SokkMsg) {
 	Sends a client to parse the key, it either gets rejected(bad request) or accepted => 101 status code
 	101 statuscode is switching protocols, because we are going over to websockets
 */
-
 func (ws *Sokk) handshake(client net.Conn) bool {
 	status, key := ws.parseKey(client)
 	if status != 101 {
@@ -174,7 +150,7 @@ func (ws *Sokk) handshake(client net.Conn) bool {
 		return false
 	} else {
 		//Complete handshake
-		var t = magic_str(key + magic_server_key)
+		var t = Magic_str(key + Magic_server_key)
 		var buff bytes.Buffer
 		buff.WriteString("HTTP/1.1 101 Switching Protocols\r\n")
 		buff.WriteString("Connection: Upgrade\r\n")
@@ -194,7 +170,7 @@ func (ws *Sokk) handshake(client net.Conn) bool {
 */
 
 func (ws *Sokk) parseKey(client net.Conn) (code int, k string) {
-	bufReader := bufio.NewReader(client) // TODO Double trouble? this coud very well be a client instead
+	bufReader := bufio.NewReader(client)
 	request, err := http.ReadRequest(bufReader)
 	if err != nil {
 		ws.OnError("Parse HTTP request error. ",err)
@@ -221,22 +197,22 @@ func reject(client net.Conn) {
 }
 
 /*
-	func magic_str(in string) (key string)
+	func Magic_str(in string) (key string)
 	takes the key from the Clients request, and appends the wskey
 	sha1 that sum and returns that string
 */
-func magic_str(str string) (keyz string) {
+func Magic_str(str string) (keyz string) {
 	h := sha1.New()
 	h.Write([]byte(str))
 	keyz = base64.StdEncoding.EncodeToString(h.Sum(nil))
 	return
 }
-
 /*
-	func close_r(net.Conn)
-	removes the connection from the list. If the user count is low,
-*/
-func (ws *Sokk) close_r(c net.Conn) {
+	func Close_wErr(c net.Conn)
+	removes a user from the user list. Without calling the user specified method OnClose
+ */
+
+func (ws *Sokk) Close_wErr(c net.Conn){
 	for i := range ws.Clients {
 		if ws.Clients[i] != nil{
 			if ws.Clients[i] == c {
@@ -246,5 +222,22 @@ func (ws *Sokk) close_r(c net.Conn) {
 			}
 		}
 	}
-	ws.OnClose()
+}
+
+/*
+	func close_r(net.Conn)
+	calls the user specified onClose method
+	removes the connection from the list.
+*/
+func (ws *Sokk) close_r(c net.Conn) {
+	ws.OnClose(c)
+	for i := range ws.Clients {
+		if ws.Clients[i] != nil{
+			if ws.Clients[i] == c {
+				c.Close()
+				ws.Clients = append(ws.Clients[:i], ws.Clients[i+1:]...) // delete from slice
+				break
+			}
+		}
+	}
 }

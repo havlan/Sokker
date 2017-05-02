@@ -24,14 +24,14 @@
   
 ### Installation
 
-**Check your environment with "go env"**
+From GOPATH
 ```
 go get github.com/havlan/Sokker
 go test github.com/havlan/Sokker/test -v
 ```
-If you are in your gopath/src directory
+
 ```
-cd github.com/havlan/Sokker/examples && go run Example_http.go 
+cd src/github.com/havlan/Sokker/examples && go run Example_http.go 
 ```
 Now localhost:3000 hopefully shows a chat.
 
@@ -96,7 +96,7 @@ sokk.OnError = func(w string, e error){ // custom handle error
 		errBuff.WriteString(time.Now().String())
 		errBuff.WriteString(w)
 		errBuff.WriteString(e.Error())
-		f.Sync()
+		f.Sync()// Sync commits the current contents of the file to stable storage.
 		errBuff.Flush()
 		os.Exit(1)
 	}
@@ -111,7 +111,7 @@ sokk.OnMessage = func(b ws.SokkMsg){
 		msgBuff.WriteString(time.Now().String() + " ")
 		msgBuff.Write(b.Payload[:b.PlLen])
 		msgBuff.WriteString("\n")
-		msgFile.Sync() // sync file writing
+		msgFile.Sync() //Sync commits the current contents of the file to stable storage.
 		msgBuff.Flush()
 		sokk.Send(&b) // sends to all Clients which exists in the sockets array of connections
 	}
@@ -125,7 +125,7 @@ Why go?
 - Go uses GoRoutines which is a lightweight thread of execution. Less overhead, when blocking, the runtime moves other coroutines on the same operating system thread to a different.  
 - Go uses channels. Channels are the pipes that connect concurrent goroutines. Send into one and extract in the other.
 - To learn something new!  
-- **Thoughts on Go throughout the project?** Go can be used for many things, i'm not experienced in go, but i feel like i can do exactly everything i can do in go in another language. But go with channels can be amazingly good, it can make parallel programming "easy". And by that i mean that golang's thread model (goroutines) is quite easy and nice to use, both the normal way and the lambda way. But i still feel like i'm not in control, that is most likely since this is our first go project.
+- As students familiar with Java, C++, python and matlab go was quite nice, a solid mix between some pointers here and there, and some matlab/python syntax it was quite nice.
 
 
 

@@ -28,11 +28,30 @@ But it's still more than usable!
 Example #1 (full code under examples)
 ```golang
 func main() {
-    sokk := NewSokk()
-    go sokk.Start("127.0.0.1", "3001") // localhost:3000
-    http.Handle("/", http.FileServer(http.Dir("../static")))
-    http.ListenAndServe("localhost:3000", nil)
+	sokk := NewSokk()
+	
+	sokk.OnClose = func(){
+		fmt.Println("OnClose!")
+	}
+	sokk.OnConnection = func(c net.Conn){
+		fmt.Println("NEW CONNECTION!")
+		sokk.Clients = append(sokk.Clients,c) // add the user into the accepted client list
+	}
+	sokk.OnError = func(w string, e error){ // custom handle error
+		fmt.Println(w, " ", e.Error())
+		os.Exit(1)
+		
+	}
+	sokk.OnMessage = func(b SokkMsg){
+		fmt.Println(string(b.Payload[:b.PlLen])) // prints the data
+		sokk.Send(&b)                             // sends to all Clients which exists in the sockets array of connections
+		
+	}
+	go sokk.Start("127.0.0.1", "3001") // localhost:3000
+	http.Handle("/", http.FileServer(http.Dir("../static")))
+	http.ListenAndServe("localhost:3000", nil)
 }
+
 ```
 That was the entire main method!
 

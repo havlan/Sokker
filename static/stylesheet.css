@@ -1,21 +1,83 @@
+html {
+    position: relative;
+    min-height: 100%;
+}
+
 body {
-    background-color: lightblue;
+    background-color: azure;
+    margin-bottom: 60px;
+}
+
+.center2 {
+    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);
+    margin:auto;
+    width: 70%;
+    height: 30%;
+    background: #1d6d80;
+    padding: 10px;
+    padding-bottom: 12px;
 }
 
 .center {
     box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);
     margin:auto;
-    margin-top: 100px;
-    width: 50%;
+    margin-top: 50px;
+    width: 70%;
     height: 30%;
     background: #1d6d80;
     padding: 10px;
+    padding-bottom: 12px;
+}
+
+#messages-ter{
+    border: solid;
+}
+.messageBoxOver{
+    width: 100%;
+    height: auto;
+    text-align:justify;
+    overflow-x: scroll;
+}
+
+.messageBox{
+    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);
+    background-color: #00c5c9;
+    margin-top: 50px;
+    width: 43%;
+    float: left;
+    height: auto;
+    text-align:justify;
+    overflow-x: scroll;
+}
+
+messageBoxText{
+    height: 100%;
+    width: 100%;
+    text-align:justify;
+    overflow-x: scroll;
+}
+.navn{
+    background-color: #29aec9;
 }
 
 .scroll-area{
+    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);
+    margin:auto;
+    margin-bottom: 10px;
+    padding: 10px;
+    padding-bottom: 12px;
     width:100%;
-    height:calc(100% - 200px);
+    height:500px;
+    overflow-y: scroll;
+    background-color: #247c80;
+}
 
-    overflow-y:scroll;
+
+footer {
+    position: fixed;
+    height: 50px;
+    bottom: 0;
+    width: 100%;
+    background-color: #1d6d80;
 }
 

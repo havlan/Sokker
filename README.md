@@ -17,7 +17,7 @@
   - **Path** to the bin subdirectory of GOROOT $GOROOT/bin (/usr/local/go/bin)
   - **GOPATH** to a workspace. A workspace consists of a root directory and a src subdirectory. Ex. /home/myname/GoglandProjects
   
-   *Make sure your GOPATH looks something like this* 
+   *the GOPATH illustrated:*
      ```
       GOPATH
       └───github.com

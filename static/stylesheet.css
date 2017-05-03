@@ -47,14 +47,12 @@ body {
     float: left;
     height: auto;
     text-align:justify;
-    overflow-x: scroll;
 }
 
 messageBoxText{
     height: 100%;
     width: 100%;
     text-align:justify;
-    overflow-x: scroll;
 }
 .navn{
     background-color: #29aec9;

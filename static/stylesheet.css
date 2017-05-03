@@ -36,14 +36,13 @@ body {
     width: 100%;
     height: auto;
     text-align:justify;
-    overflow-x: scroll;
 }
 
 .messageBox{
     box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);
     background-color: #00c5c9;
     margin-top: 50px;
-    width: 43%;
+    width: 53%;
     float: left;
     height: auto;
     text-align:justify;

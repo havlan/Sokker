@@ -4,6 +4,12 @@
 
 
 **FIRST GO PROJECT! BEWARE!**
+### Thread model
+- Goroutines, the idea, which has been around for a while, is to multiplex independently executing functions—coroutines—onto a set of threads. When a coroutine blocks, such as by calling a blocking system call, the run-time automatically moves other coroutines on the same operating system thread to a different, runnable thread so they won't be blocked.
+- To make the stacks small, Go's run-time uses resizable, bounded stacks. A newly minted goroutine is given a few kilobytes, which is almost always enough. 
+- When it isn't, the run-time grows (and shrinks) the memory for storing the stack automatically, allowing many goroutines to live in a modest amount of memory. https://golang.org/doc/faq#goroutines
+- So go is not exactly asynchronous, but the goroutines is managed by the runtime. Together with channels (a way to communicate between goroutines) you can make pretty cool software, with workers listening to channels.
+
 ### Prerequisites
 - Git
 - Go 1.8 and working go environment

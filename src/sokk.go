@@ -1,5 +1,6 @@
 /*
 THE GOAL IS TO PARSE THIS
+From https://tools.ietf.org/html/rfc6455
 +-+-+-+-+-------+-+-------------+-------------------------------+
 |F|R|R|R| opcode|M| Payload len |    Extended payload length    |
 |I|S|S|S|  (4)  |A|     (7)     |             (16/63)           |

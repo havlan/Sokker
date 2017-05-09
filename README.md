@@ -140,3 +140,4 @@ Why go?
 - http://stackoverflow.com/questions/18368130/how-to-parse-and-validate-a-websocket-frame-in-java
 - https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API/Writing_WebSocket_servers
 - http://stackoverflow.com/questions/11815894/how-to-read-write-arbitrary-bits-in-c-c
+- https://tools.ietf.org/html/rfc6455

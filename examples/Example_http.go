@@ -20,7 +20,8 @@ func main() {
 	}
 	sokk.OnError = func(w string, e error){ // custom handle error
 		fmt.Println(w, " ", e.Error())
-		panic(e)
+		return
+		//panic(e)
 		
 	}
 	sokk.OnMessage = func(b ws.SokkMsg){
